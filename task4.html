@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muller's Method for Complex Roots</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Muller's Method for Finding Roots</h1>
+
+    <h3>Iteration Results:</h3>
+    <table border="1" id="iterationTable">
+        <thead>
+            <tr>
+                <th>Iteration</th>
+                <th>Root Approximation (x)</th>
+                <th>f(x) Value</th>
+                <th>Absolute Error</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <h3>Final Root and Check</h3>
+    <p id="finalResult"></p>
+
+    <canvas id="convergenceGraph" width="400" height="200"></canvas>
+
+    <script>
+        // Define the function f(x) = x^3 + x^2 + x + 1
+        function f(x) {
+            return x**3 + x**2 + x + 1;
+        }
+
+        // Muller's Method implementation for finding roots
+        function mullersMethod(x0, x1, x2, tolerance, maxIterations) {
+            let results = [];
+            let iteration = 0;
+
+            while (iteration < maxIterations) {
+                // Calculate the function values at the points
+                let f0 = f(x0);
+                let f1 = f(x1);
+                let f2 = f(x2);
+
+                // Calculate the denominators for the coefficients A, B, C
+                let h0 = x1 - x0;
+                let h1 = x2 - x1;
+                let delta0 = (f1 - f0) / h0;
+                let delta1 = (f2 - f1) / h1;
+                let delta2 = (delta1 - delta0) / (h1 + h0);
+
+                // Calculate the coefficients of the quadratic
+                let A = delta2;
+                let B = delta1 + h1 * delta2;
+                let C = f2;
+
+                // Solve the quadratic equation: x = x2 - (-B ± sqrt(B^2 - 4AC)) / 2A
+                let discriminant = Math.sqrt(B*B - 4*A*C);
+                let root1 = x2 - (B + discriminant) / (2 * A);
+                let root2 = x2 - (B - discriminant) / (2 * A);
+
+                // Select the root with the smallest absolute error
+                let selectedRoot = Math.abs(f(root1)) < Math.abs(f(root2)) ? root1 : root2;
+
+                // Calculate absolute error
+                let absoluteError = Math.abs(selectedRoot - x2);
+
+                // Store iteration data
+                results.push({
+                    iteration: iteration + 1,
+                    root: selectedRoot,
+                    fValue: f(selectedRoot),
+                    absoluteError: absoluteError
+                });
+
+                // Check for convergence
+                if (absoluteError < tolerance) {
+                    break;
+                }
+
+                // Prepare for next iteration
+                x0 = x1;
+                x1 = x2;
+                x2 = selectedRoot;
+
+                iteration++;
+            }
+
+            return results;
+        }
+
+        // Initial approximations
+        const x0 = -1;
+        const x1 = 0;
+        const x2 = 1;
+        const tolerance = 1e-6;
+        const maxIterations = 20;
+
+        // Get the iteration results using Muller's method
+        const iterationResults = mullersMethod(x0, x1, x2, tolerance, maxIterations);
+
+        // Fill the table with iteration results
+        const tableBody = document.getElementById("iterationTable").getElementsByTagName("tbody")[0];
+        iterationResults.forEach(result => {
+            const row = tableBody.insertRow();
+            row.insertCell(0).textContent = result.iteration;
+            row.insertCell(1).textContent = result.root.toFixed(6);
+            row.insertCell(2).textContent = result.fValue.toFixed(6);
+            row.insertCell(3).textContent = result.absoluteError.toFixed(6);
+        });
+
+        // Display the final root and check the result
+        const finalRoot = iterationResults[iterationResults.length - 1].root;
+        const finalFValue = f(finalRoot);
+        document.getElementById("finalResult").textContent = `Found root: ${finalRoot.toFixed(6)}, f(x) at root: ${finalFValue.toFixed(6)}`;
+
+        // Plot the convergence graph
+        const ctx = document.getElementById('convergenceGraph').getContext('2d');
+        const iterationNumbers = iterationResults.map(result => result.iteration);
+        const absoluteErrors = iterationResults.map(result => result.absoluteError);
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: iterationNumbers,
+                datasets: [{
+                    label: 'Absolute Error',
+                    data: absoluteErrors,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { title: { display: true, text: 'Iteration Number' } },
+                    y: { title: { display: true, text: 'Absolute Error' }, beginAtZero: true }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

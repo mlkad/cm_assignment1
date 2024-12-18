@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Root Finding Methods: Bisection vs Secant</title>
+</head>
+<body>
+    <h1>Comparison of Root Finding Methods</h1>
+
+    <div>
+        <h3>Root Finding Results:</h3>
+        <p><strong>Bisection Method:</strong> <span id="bisectionResult"></span></p>
+        <p><strong>Secant Method:</strong> <span id="secantResult"></span></p>
+    </div>
+
+    <script>
+        // Define the function f(x) = e^x - 2x - 3
+        function f(x) {
+            return Math.exp(x) - 2 * x - 3;
+        }
+
+        // Bisection Method
+        function bisectionMethod(a, b, tolerance) {
+            let iter = 0;
+            let m = a;
+            while ((b - a) / 2 > tolerance) {
+                m = (a + b) / 2;
+                if (f(m) === 0) {
+                    break;
+                }
+                iter++;
+                if (f(m) * f(a) < 0) {
+                    b = m;
+                } else {
+                    a = m;
+                }
+            }
+            return { root: m, iterations: iter };
+        }
+
+        // Secant Method
+        function secantMethod(x0, x1, tolerance) {
+            let iter = 0;
+            let x2;
+            while (Math.abs(x1 - x0) > tolerance) {
+                x2 = x1 - f(x1) * (x1 - x0) / (f(x1) - f(x0));
+                x0 = x1;
+                x1 = x2;
+                iter++;
+            }
+            return { root: x2, iterations: iter };
+        }
+
+        // Exact root (can be calculated using a more accurate method, e.g., Newton's method or numerical solver)
+        const exactRoot = 2.0;
+
+        // Parameters
+        const tolerance = 1e-6;
+
+        // Bisection method in the interval [0, 2]
+        const bisection = bisectionMethod(0, 2, tolerance);
+        const secant = secantMethod(0, 2, tolerance);
+
+        // Calculate relative errors for both methods
+        const bisectionError = Math.abs((bisection.root - exactRoot) / exactRoot);
+        const secantError = Math.abs((secant.root - exactRoot) / exactRoot);
+
+        // Display results
+        document.getElementById('bisectionResult').innerHTML = `Root: ${bisection.root.toFixed(6)}, Iterations: ${bisection.iterations}, Relative Error: ${bisectionError.toFixed(6)}`;
+        document.getElementById('secantResult').innerHTML = `Root: ${secant.root.toFixed(6)}, Iterations: ${secant.iterations}, Relative Error: ${secantError.toFixed(6)}`;
+
+        console.log("Bisection Method: ", bisection);
+        console.log("Secant Method: ", secant);
+    </script>
+</body>
+</html>

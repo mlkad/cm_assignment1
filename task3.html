@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newton-Raphson Method and Error Estimation</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Newton-Raphson Method and Error Estimation</h1>
+
+    <h3>Iteration Results:</h3>
+    <table border="1" id="iterationTable">
+        <thead>
+            <tr>
+                <th>Iteration</th>
+                <th>Current Guess (x)</th>
+                <th>Absolute Error</th>
+                <th>Relative Error</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <canvas id="convergenceGraph" width="400" height="200"></canvas>
+
+    <script>
+        // Define the function f(x) = x^2 - 3x + 2 and its derivative f'(x) = 2x - 3
+        function f(x) {
+            return x * x - 3 * x + 2;
+        }
+
+        function fPrime(x) {
+            return 2 * x - 3;
+        }
+
+        // Newton-Raphson method
+        function newtonRaphson(x0, tolerance, maxIterations) {
+            let x = x0;
+            let iteration = 0;
+            const results = [];
+            const exactRoot = 1; // Exact root of f(x) = 0 is x = 1
+
+            while (iteration < maxIterations) {
+                // Calculate the next guess using the Newton-Raphson formula
+                let xNext = x - f(x) / fPrime(x);
+
+                // Calculate errors
+                let absoluteError = Math.abs(xNext - x);
+                let relativeError = Math.abs((xNext - x) / xNext);
+
+                // Store iteration data
+                results.push({
+                    iteration: iteration + 1,
+                    currentGuess: xNext,
+                    absoluteError: absoluteError,
+                    relativeError: relativeError
+                });
+
+                // Check for convergence
+                if (absoluteError < tolerance) {
+                    break;
+                }
+
+                // Update x for the next iteration
+                x = xNext;
+                iteration++;
+            }
+
+            return results;
+        }
+
+        // Parameters for the Newton-Raphson method
+        const initialGuess = 2.5;
+        const tolerance = 1e-6;
+        const maxIterations = 20;
+
+        // Get the iteration results
+        const iterationResults = newtonRaphson(initialGuess, tolerance, maxIterations);
+
+        // Fill the table with the iteration results
+        const tableBody = document.getElementById("iterationTable").getElementsByTagName("tbody")[0];
+        iterationResults.forEach(result => {
+            const row = tableBody.insertRow();
+            row.insertCell(0).textContent = result.iteration;
+            row.insertCell(1).textContent = result.currentGuess.toFixed(6);
+            row.insertCell(2).textContent = result.absoluteError.toFixed(6);
+            row.insertCell(3).textContent = result.relativeError.toFixed(6);
+        });
+
+        // Plot the convergence graph
+        const ctx = document.getElementById('convergenceGraph').getContext('2d');
+        const iterationNumbers = iterationResults.map(result => result.iteration);
+        const absoluteErrors = iterationResults.map(result => result.absoluteError);
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: iterationNumbers,
+                datasets: [{
+                    label: 'Absolute Error',
+                    data: absoluteErrors,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { title: { display: true, text: 'Iteration Number' } },
+                    y: { title: { display: true, text: 'Absolute Error' }, beginAtZero: true }
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>

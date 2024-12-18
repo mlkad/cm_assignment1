@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>False Position Method</title>
+  <script src="https://cdn.plot.ly/plotly-2.20.0.min.js"></script>
+</head>
+<body>
+  <h1>False Position Method: Root Finding</h1>
+  <div>
+    <p>The root of the equation \(f(x) = x^2 - 2^x\) is calculated using the False Position Method. Below is the graph of the absolute error as a function of iteration number.</p>
+  </div>
+  <div id="graph" style="width: 100%; height: 500px;"></div>
+  
+  <script>
+    // Function definition
+    function f(x) {
+      return Math.pow(x, 2) - Math.pow(2, x); // f(x) = x^2 - 2^x
+    }
+
+    // False Position Method Implementation
+    function falsePositionMethod(a, b, tol, maxIter) {
+      let fa = f(a);
+      let fb = f(b);
+      if (fa * fb > 0) {
+        throw new Error("The function must have opposite signs at endpoints a and b.");
+      }
+
+      let iter = 0;
+      let errors = [];
+      let c;
+
+      while (iter < maxIter) {
+        c = (a * fb - b * fa) / (fb - fa); // False position formula
+        let fc = f(c);
+
+        let absError = Math.abs(fc);
+        let relError = Math.abs((b - a) / c);
+
+        errors.push({ iteration: iter + 1, absError, relError });
+
+        if (absError < tol) break;
+
+        // Update interval
+        if (fa * fc < 0) {
+          b = c;
+          fb = fc;
+        } else {
+          a = c;
+          fa = fc;
+        }
+
+        iter++;
+      }
+
+      return { root: c, errors };
+    }
+
+    // Visualization setup
+    function plotErrors(errors) {
+      const iterationNums = errors.map((e) => e.iteration);
+      const absErrors = errors.map((e) => e.absError);
+
+      const data = [
+        {
+          x: iterationNums,
+          y: absErrors,
+          type: "scatter",
+          mode: "lines+markers",
+          name: "Absolute Error",
+        },
+      ];
+
+      const layout = {
+        title: "Absolute Error vs Iteration Number",
+        xaxis: { title: "Iteration Number" },
+        yaxis: { title: "Absolute Error", type: "log" },
+      };
+
+      Plotly.newPlot("graph", data, layout);
+    }
+
+    // Solve and Plot
+    const tolerance = 1e-6;
+    const maxIterations = 50;
+    const interval = { a: 0.5, b: 2.0 };
+
+    try {
+      const result = falsePositionMethod(interval.a, interval.b, tolerance, maxIterations);
+      console.log("Root:", result.root);
+      console.table(result.errors);
+      plotErrors(result.errors);
+    } catch (error) {
+      console.error(error.message);
+    }
+  </script>
+</body>
+</html>

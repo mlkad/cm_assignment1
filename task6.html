@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iteration Method and Errors</title>
+</head>
+<body>
+  <h1>Iteration Method: Solving \(f(x) = x^2 - 6x + 5\)</h1>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Iteration</th>
+        <th>\(x_n\)</th>
+        <th>Absolute Error</th>
+      </tr>
+    </thead>
+    <tbody id="result-table"></tbody>
+  </table>
+
+  <script>
+// Function g(x) = sqrt(6x - 5)
+function g(x) {
+  const value = 6 * x - 5; // Argument inside sqrt
+  if (value < 0) {
+    console.warn(`Invalid value encountered in sqrt: ${value}`);
+    return NaN;
+  }
+  return Math.sqrt(value);
+}
+
+// Iterative Method Implementation
+function iterativeMethod(x0, trueRoot, iterations) {
+  const results = [];
+  let x = x0;
+
+  for (let i = 0; i < iterations; i++) {
+    const xNext = g(x); // Compute next iteration
+    if (isNaN(xNext)) {
+      console.error(`Iteration ${i + 1}: Computation failed (x = ${x})`);
+      break;
+    }
+    const absError = Math.abs(xNext - trueRoot); // Compute absolute error
+
+    results.push({ iteration: i + 1, x: xNext, absError });
+    x = xNext; // Update current value for next iteration
+  }
+
+  return results;
+}
+
+// Perform Iterations
+const x0 = 1.0; // Valid initial guess
+const trueRoot = 1.0; // Known true root
+const iterations = 10; // Number of iterations
+
+const results = iterativeMethod(x0, trueRoot, iterations);
+
+// Display Results in the Table
+const tableBody = document.getElementById("result-table");
+results.forEach(({ iteration, x, absError }) => {
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td>${iteration}</td>
+    <td>${x.toFixed(6)}</td>
+    <td>${absError.toFixed(6)}</td>
+  `;
+  tableBody.appendChild(row);
+});
+
+  </script>
+</body>
+</html>
